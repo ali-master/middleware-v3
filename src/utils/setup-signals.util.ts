@@ -1,11 +1,8 @@
-import { SystemLogger } from "@root/utils";
-
-export const setupSignals = (shutdown) => {
+export const setupSignals = (shutdown: () => Promise<void>) => {
   const signals = ["SIGTERM", "SIGINT", "SIGHUP", "SIGBREAK"];
   signals.forEach((signal) => {
-    process.on(signal, () => {
-      SystemLogger.warn(`Received ${signal}, shutting down...`);
-      shutdown();
+    process.on(signal, async () => {
+      await shutdown();
     });
   });
 };

@@ -9,7 +9,7 @@ import { LoggingInterceptor } from "@root/interceptors";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 // Utilities
 import { Logger } from "@nestjs/common";
-import { CommonConfig } from "@root/utils";
+import { CommonConfig, setupSignals } from "@root/utils";
 import { DocumentBuilder } from "@nestjs/swagger";
 import { FastifyAdapter } from "@nestjs/platform-fastify";
 import { apiReference } from "@scalar/nestjs-api-reference";
@@ -59,6 +59,11 @@ async function bootstrap() {
   app.useGlobalInterceptors(new ClsInterceptor());
   app.useGlobalInterceptors(new LoggingInterceptor());
 
+  app.enableShutdownHooks();
+  setupSignals(async () => {
+    logger.warn("Service is shutting down", "Shutdown");
+    await app.close();
+  });
   await app.listen(CommonConfig.PORT, "0.0.0.0");
   logger.log(`Service is running on: ${await app.getUrl()}`, "Bootstrap");
   logger.log(`Service is running in ${CommonConfig.ENV} mode`, "Bootstrap");

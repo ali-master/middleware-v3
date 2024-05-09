@@ -1,7 +1,7 @@
 import { from } from "env-var";
-import { SystemLogger } from "@root/utils/logger.util";
+import { Logger } from "@nestjs/common";
 
-const log = SystemLogger.child({ module: "Process ENV" });
+const log = new Logger("ENV");
 const envInstance = from(process.env, {}, (varname, str) => {
   log.debug(`Environment variable ${varname} with Value: ${str} loaded`);
 });

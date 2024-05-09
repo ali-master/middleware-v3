@@ -1,4 +1,4 @@
-import { Logger } from "@nestjs/common";
+import { Logger, OnApplicationShutdown } from "@nestjs/common";
 // Decorators
 import {
   MessageBody,
@@ -9,21 +9,27 @@ import {
 } from "@nestjs/websockets";
 // Utilities
 import { CommonConfig, KucoinWsClient } from "@root/utils";
+// Enums
+import { IoClientEvent, IoClientRequest, IoTokenRoom } from "@root/domains/socket/enums";
 // Types
 import type { Socket, Server } from "socket.io";
 import type { OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from "@nestjs/websockets";
-import { IoClientEvent, IoClientRequest, IoTokenRoom } from "@root/domains/socket/enums";
 
 @WebSocketGateway()
-export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
+export class SocketGateway
+  implements OnApplicationShutdown, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
+{
   private readonly logger = new Logger();
   private readonly kucoin = new KucoinWsClient({
     isPrivate: false,
     baseURL: CommonConfig.KUCOIN_OPENAPI_BASE_URL,
     authVersion: CommonConfig.KUCOIN_OPENAPI_VERSION,
   });
-
   @WebSocketServer() server: Server;
+
+  onApplicationShutdown() {
+    this.kucoin.disconnect();
+  }
 
   isSocketOpen() {
     return this.kucoin.isSocketOpen;

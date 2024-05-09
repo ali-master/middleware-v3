@@ -1,9 +1,10 @@
 import * as WebSocket from "ws";
 import { randomBytes } from "crypto";
 import { EventEmitter } from "events";
+import { Logger } from "@nestjs/common";
 import { Duration, Effect, Schedule } from "effect";
+import { getRandomId, CommonConfig } from "@root/utils";
 import { httpInstance, noop } from "@root/utils/socket/utils";
-import { SystemLogger, getRandomId, CommonConfig } from "@root/utils";
 // Enums
 import { ReservedEventsChannel } from "@root/utils/socket/enums";
 // Types
@@ -16,7 +17,6 @@ import type {
 } from "@root/utils/socket/models";
 import type { DurationInput } from "effect/Duration";
 import type { SubscriptionModel } from "@root/utils/socket/models/events/subscription.model";
-import { Logger } from "@nestjs/common";
 
 export class KucoinWsClient extends EventEmitter {
   public readonly logger: Logger;
@@ -33,6 +33,7 @@ export class KucoinWsClient extends EventEmitter {
   private connectId: string;
   private pingIntervalMs: number;
   private pingTimer: NodeJS.Timer;
+  private monitoringIntervalId: NodeJS.Timeout;
   private readonly options: SocketOptions;
   private readonly mapResolveWaitEvent = new Map<string, () => void>();
   private lastTickerEventContact = Date.now();
@@ -94,9 +95,14 @@ export class KucoinWsClient extends EventEmitter {
       }
     });
 
-    setInterval(() => {
+    this.monitoringIntervalId = setInterval(() => {
       Effect.runSync(connectEffect);
     }, 1000);
+  }
+
+  private stopMonitoring() {
+    this.logger.debug("Stopping the monitoring...");
+    clearInterval(this.monitoringIntervalId);
   }
 
   async connect(): Promise<void> {
@@ -318,7 +324,12 @@ export class KucoinWsClient extends EventEmitter {
       return;
     }
 
+    this.logger.debug("Disconnecting the Socket...");
+
+    this.askingClose = true;
+    this.stopMonitoring();
     this.stopPing();
+
     this.ws?.close();
   }
 
@@ -357,6 +368,7 @@ export class KucoinWsClient extends EventEmitter {
   }
 
   private stopPing() {
+    this.logger.debug("Stopping the ping...");
     clearInterval(this.pingTimer as unknown as number);
   }
 
