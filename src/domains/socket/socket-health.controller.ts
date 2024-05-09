@@ -1,6 +1,16 @@
-import { Controller, Get, HttpException, InternalServerErrorException } from "@nestjs/common";
 import { SocketGateway } from "@root/domains/socket/socket.gateway";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+// Exceptions
+import { InternalServerErrorException } from "@nestjs/common";
+// Decorators
+import {
+  ApiTags,
+  ApiOperation,
+  ApiOkResponse,
+  ApiInternalServerErrorResponse,
+} from "@nestjs/swagger";
+import { Controller, Get } from "@nestjs/common";
+// DTOs
+import { HealthCheckDto } from "@root/dtos/health-check.dto";
 
 @Controller({
   version: "1",
@@ -14,6 +24,14 @@ export class SocketHealthController {
   @ApiOperation({
     description: "Check the health of the WebSocket connection",
     summary: "WebSocket health",
+  })
+  @ApiOkResponse({
+    type: HealthCheckDto,
+    description: "The system is up and running",
+  })
+  @ApiInternalServerErrorResponse({
+    description: "The system is down",
+    type: HealthCheckDto,
   })
   async wsHealthCheck() {
     if (this.socketGateway.isSocketOpen) {
