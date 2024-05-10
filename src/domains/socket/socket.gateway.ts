@@ -112,6 +112,10 @@ export class SocketGateway
   handlePingMessage(@ConnectedSocket() client: Socket) {
     this.logger.debug(`Message received from client id: ${client.id}`);
 
-    client.emit("pong", "pong");
+    client.emit("pong", {
+      message: "Pong!",
+      server_time: new Date().toISOString(),
+      server_timestamp: new Date().getTime(),
+    });
   }
 }
