@@ -63,6 +63,8 @@ async function bootstrap() {
   setupSignals(async () => {
     logger.warn("Service is shutting down", "Shutdown");
     await app.close();
+    logger.warn("Service has been shut down", "Shutdown");
+    process.exit(0);
   });
   await app.listen(CommonConfig.PORT, "0.0.0.0");
   logger.log(`Service is running on: ${await app.getUrl()}`, "Bootstrap");

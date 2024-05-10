@@ -32,7 +32,7 @@ export class KucoinWsClient extends EventEmitter {
   private askingClose: boolean;
   private connectId: string;
   private pingIntervalMs: number;
-  private pingTimer: NodeJS.Timer;
+  private pingIntervalId: NodeJS.Timer;
   private monitoringIntervalId: NodeJS.Timeout;
   private readonly options: SocketOptions;
   private readonly mapResolveWaitEvent = new Map<string, () => void>();
@@ -84,14 +84,22 @@ export class KucoinWsClient extends EventEmitter {
 
   private async monitor() {
     this.logger.debug("Monitoring the Socket connection...");
+    const maxRetries = 10;
+    let retries = 0;
 
     const connectEffect = Effect.sync(() => {
       const now = Date.now();
       const diff = now - this.lastTickerEventContact;
       const isIdle = diff > 10000; // 10 seconds idle time before reconnecting
       if (isIdle) {
-        this.logger.debug("The Socket is idle. Reconnecting...");
-        this.reconnect();
+        if (retries <= maxRetries) {
+          this.logger.debug(`The Socket is idle. Reconnecting ${retries + 1} times...`);
+          this.reconnect();
+          retries++;
+        } else {
+          this.logger.error("The Socket is idle. Reconnecting failed. Exiting the process...");
+          process.exit(0);
+        }
       }
     });
 
@@ -101,6 +109,9 @@ export class KucoinWsClient extends EventEmitter {
   }
 
   private stopMonitoring() {
+    if (!this.monitoringIntervalId) {
+      return;
+    }
     this.logger.debug("Stopping the monitoring...");
     clearInterval(this.monitoringIntervalId);
   }
@@ -364,12 +375,15 @@ export class KucoinWsClient extends EventEmitter {
   private startPing() {
     this.stopPing();
 
-    this.pingTimer = setInterval(() => this.sendPing(), this.pingIntervalMs);
+    this.pingIntervalId = setInterval(() => this.sendPing(), this.pingIntervalMs);
   }
 
   private stopPing() {
+    if (!this.pingIntervalId) {
+      return;
+    }
     this.logger.debug("Stopping the ping...");
-    clearInterval(this.pingTimer as unknown as number);
+    clearInterval(this.pingIntervalId as unknown as number);
   }
 
   private async openWebsocketConnection(): Promise<void> {
