@@ -31,8 +31,10 @@ export class SocketHealthCheckService implements OnApplicationShutdown {
   }
 
   onApplicationShutdown() {
+    this.logger.debug("Shutting down socket client");
     this.stopPing();
     this.socket.disconnect();
+    this.logger.debug("Socket client shut down");
   }
 
   isHealthy() {
