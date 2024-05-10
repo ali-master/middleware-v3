@@ -1,7 +1,12 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 // Utilities
 import { tap } from "rxjs/operators";
-import { getHttpStatusText, getRequestIp, getCorrelationId } from "@root/utils";
+import {
+  getHttpStatusText,
+  getRequestIp,
+  getCorrelationId,
+  filterSensitiveProps,
+} from "@root/utils";
 // Types
 import type { Observable } from "rxjs";
 import type { FastifyReply, FastifyRequest } from "fastify";
@@ -48,7 +53,7 @@ export class LoggingInterceptor implements NestInterceptor {
       message: "request",
       process: "start",
       reqBody: body,
-      reqHeaders: headers,
+      reqHeaders: filterSensitiveProps(headers),
       reqUrl: url,
       reqMethod: method,
       reqParams: params,
@@ -115,7 +120,7 @@ export class LoggingInterceptor implements NestInterceptor {
     const { headers = {} } = req;
 
     const xCorrelationId = getCorrelationId();
-    logData.resHeaders = { headers };
+    logData.resHeaders = { headers: filterSensitiveProps(headers) };
     logData.error = error.message;
     logData.errorStack = error.stack ?? "unknown";
     logData.errorDescription = error?.description ?? error?.reason ?? "unknown";
