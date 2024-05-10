@@ -1,10 +1,10 @@
 import * as Prometheus from "prom-client";
-import { serviceName } from "@root/utils/logger.util";
+import { AppServiceName } from "@root/utils/common.util";
 
 export const monitoring = new Prometheus.Registry();
 
 monitoring.setDefaultLabels({
-  app: serviceName,
+  app: AppServiceName,
 });
 Prometheus.collectDefaultMetrics({ register: monitoring });
 const http_request_counter = new Prometheus.Counter({

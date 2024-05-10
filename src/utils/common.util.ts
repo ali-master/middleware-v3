@@ -13,3 +13,5 @@ export function addDashBetweenPair(pair: string): string {
 export function checkUsdt(pair: string) {
   return pair.endsWith("-USDT");
 }
+
+export const AppServiceName = "MiddlewareV3";

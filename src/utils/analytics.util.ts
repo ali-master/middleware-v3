@@ -1,7 +1,7 @@
 import { PostHog } from "posthog-node";
-import { serviceName } from "@root/utils/logger.util";
+import { AppServiceName } from "@root/utils/common.util";
 
-export const distinctId = serviceName;
+export const distinctId = AppServiceName;
 export const analyticsClient = new PostHog("phc_55mJKwu5Y71NIxGL2UDMoUY6YchuFety17kTLio1cjz", {
   host: "https://us.i.posthog.com",
   featureFlagsPollingInterval: 5000,

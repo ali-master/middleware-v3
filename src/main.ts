@@ -1,4 +1,5 @@
 import "dotenv/config";
+import "source-map-support";
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "@root/app.module";
 import { SwaggerModule } from "@nestjs/swagger";
@@ -49,8 +50,8 @@ async function bootstrap() {
         content: document,
       },
       metaData: {
-        title: "Pooleno Middleware API Documentation",
-        description: "Middleware API documentation and endpoints",
+        title,
+        description,
       },
       layout: "modern",
     }),
