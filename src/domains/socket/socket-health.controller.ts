@@ -11,6 +11,7 @@ import {
 import { Controller, Get } from "@nestjs/common";
 // DTOs
 import { HealthCheckDto } from "@root/dtos/health-check.dto";
+import { SocketHealthCheckService } from "@root/domains/socket/socket-client.service";
 
 @Controller({
   version: "1",
@@ -18,7 +19,10 @@ import { HealthCheckDto } from "@root/dtos/health-check.dto";
 })
 @ApiTags("Health Check")
 export class SocketHealthController {
-  constructor(private readonly socketGateway: SocketGateway) {}
+  constructor(
+    private readonly socketGateway: SocketGateway,
+    private readonly socketHealthCheckService: SocketHealthCheckService,
+  ) {}
 
   @Get()
   @ApiOperation({
@@ -34,7 +38,7 @@ export class SocketHealthController {
     type: HealthCheckDto,
   })
   async wsHealthCheck() {
-    if (this.socketGateway.isSocketOpen) {
+    if (this.socketGateway.isSocketOpen && this.socketHealthCheckService.isHealthy()) {
       return {
         status: "up",
       };

@@ -1,5 +1,6 @@
 import { from } from "env-var";
 import { Logger } from "@nestjs/common";
+import { DurationInput } from "effect/Duration";
 
 const log = new Logger("ENV");
 const envInstance = from(process.env, {}, (varname, str) => {
@@ -29,4 +30,16 @@ export class CommonConfig {
     .get("PROXY_MAX_REQUEST_TIMEOUT")
     .required()
     .asString();
+  static readonly WS_HEALTH_CHECK_PING_INTERVAL = envInstance
+    .get("WS_HEALTH_CHECK_PING_INTERVAL")
+    .required()
+    .asString() as DurationInput;
+  static readonly WS_HEALTH_CHECK_PING_TIMEOUT = envInstance
+    .get("WS_HEALTH_CHECK_PING_TIMEOUT")
+    .required()
+    .asString() as DurationInput;
+  static readonly WS_HEALTH_CHECK_MAX_PING_ATTEMPTS = envInstance
+    .get("WS_HEALTH_CHECK_MAX_PING_ATTEMPTS")
+    .required()
+    .asIntPositive();
 }

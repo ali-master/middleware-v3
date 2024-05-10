@@ -19,7 +19,7 @@ import type { OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect } from "@n
 export class SocketGateway
   implements OnApplicationShutdown, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
-  private readonly logger = new Logger();
+  private readonly logger = new Logger("SocketGateway");
   private readonly kucoin = new KucoinWsClient({
     isPrivate: false,
     baseURL: CommonConfig.KUCOIN_OPENAPI_BASE_URL,
@@ -36,28 +36,28 @@ export class SocketGateway
   }
 
   async afterInit(server: Server) {
-    this.logger.debug("WebSocket Gateway initialized", "SocketGateway");
+    this.logger.debug("WebSocket Gateway initialized");
 
     this.kucoin.onEvent("retry-subscription", () => {
-      this.logger.warn("Retrying subscription...", "SocketGateway");
+      this.logger.warn("Retrying subscription...");
     });
     this.kucoin.onEvent("error", (error) => {
-      this.logger.error(error, "Socket error occurred", "SocketGateway");
+      this.logger.error(error, "Socket error occurred");
     });
     this.kucoin.onEvent("close", () => {
-      this.logger.warn("Connection closed", "SocketGateway");
+      this.logger.warn("Connection closed");
     });
     this.kucoin.onEvent("ping", () => {
-      this.logger.warn("Received ping message", "SocketGateway");
+      this.logger.warn("Received ping message");
     });
     this.kucoin.onEvent("welcome", () => {
-      this.logger.debug("Received welcome message", "SocketGateway");
+      this.logger.debug("Received welcome message");
     });
     this.kucoin.onEvent("reconnect", () => {
-      this.logger.warn("Reconnecting socket", "SocketGateway");
+      this.logger.warn("Reconnecting socket");
     });
     this.kucoin.onEvent("subscription", (data) => {
-      this.logger.debug(JSON.stringify(data), "Subscribed to the Market Ticker", "SocketGateway");
+      this.logger.debug(JSON.stringify(data), "Subscribed to the Market Ticker");
     });
     this.kucoin.onEvent("unsubscription", (data) => {
       this.logger.debug(
@@ -67,7 +67,7 @@ export class SocketGateway
       );
     });
     this.kucoin.onEvent("open", () => {
-      this.logger.debug("Kucoin Socket connected", "SocketGateway");
+      this.logger.debug("Kucoin Socket connected");
       this.kucoin.subscribeTo("/market/ticker:all");
     });
     this.kucoin.onEvent("close", () => {
