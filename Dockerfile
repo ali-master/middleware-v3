@@ -6,7 +6,7 @@ RUN apk --update --no-cache add curl
 COPY package.json .
 COPY package-lock.json .
 
-RUN npm install
+RUN npm ci --legacy-peer-deps
 
 COPY . .
 

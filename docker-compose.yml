@@ -20,6 +20,26 @@ services:
     networks:
       - local-network
 
+  caddy:
+    image: caddy:alpine
+    container_name: reverse-proxy
+    restart: always
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - middleware
+    networks:
+      - local-network
+    volumes:
+        - ./devops/Caddyfile:/etc/caddy/Caddyfile
+        - caddy_data:/data
+        - caddy_config:/config
+
 networks:
   local-network:
     driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
