@@ -3,7 +3,7 @@ import { CommonConfig } from "@root/utils";
 // Decorators
 import { Injectable } from "@nestjs/common";
 // Enums
-import { IoClientEvent, IoClientMessage, IoClientRequest } from "@root/domains/socket/enums";
+import { IoClientMessage, IoClientRequest } from "@root/domains/socket/enums";
 // Types
 import type { Socket } from "socket.io-client";
 import type { OnApplicationShutdown } from "@nestjs/common";
