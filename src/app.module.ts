@@ -1,11 +1,11 @@
 import { ExecutionContext, Module } from "@nestjs/common";
 import { ClsModule } from "nestjs-cls";
 // Domain Modules
-import { SocketModule, ProxyModule, KucoinModule } from "@root/domains";
+
 // Controllers
 import { AppController } from "@root/app.controller";
 // Utilities
-import { getRandomId } from "@root/utils";
+import { getRandomId } from "@mofid/utils";
 
 @Module({
   imports: [
@@ -15,7 +15,7 @@ import { getRandomId } from "@root/utils";
         generateId: true,
         idGenerator: (ctx: ExecutionContext) => {
           const req = ctx.switchToHttp().getRequest();
-          const correlationId = req.headers["X-Correlation-Id"] ?? getRandomId;
+          const correlationId = req.headers["X-Correlation-Id"] ?? getRandomId();
           req.headers["X-Correlation-Id"] = correlationId;
 
           return correlationId;
@@ -23,9 +23,6 @@ import { getRandomId } from "@root/utils";
       },
       global: true,
     }),
-    ProxyModule,
-    KucoinModule,
-    SocketModule,
   ],
   controllers: [AppController],
 })

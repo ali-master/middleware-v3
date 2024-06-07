@@ -1,12 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from "@nestjs/common";
 // Utilities
 import { tap } from "rxjs/operators";
-import {
-  getHttpStatusText,
-  getRequestIp,
-  getCorrelationId,
-  filterSensitiveProps,
-} from "@root/utils";
+import { filterSensitiveProps } from "@mofid/utils";
+import { getHttpStatusText, getRequestIp, getCorrelationId } from "@root/utils";
 // Types
 import type { Observable } from "rxjs";
 import type { FastifyReply, FastifyRequest } from "fastify";

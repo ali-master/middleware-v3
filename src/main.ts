@@ -4,19 +4,22 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "@root/app.module";
 import { SwaggerModule } from "@nestjs/swagger";
 // Interceptors
-import { ClsInterceptor } from "nestjs-cls";
+import { ClsInterceptor, ClsMiddleware } from "nestjs-cls";
 import { LoggingInterceptor } from "@root/interceptors";
 // Types
+import type { FastifyRequest } from "fastify";
 import type { NestFastifyApplication } from "@nestjs/platform-fastify";
 // Utilities
 import { Logger } from "@nestjs/common";
-import { CommonConfig, setupSignals } from "@root/utils";
+import { getRandomId } from "@mofid/utils";
+import { default as KillPort } from "kill-port";
 import { DocumentBuilder } from "@nestjs/swagger";
+import { CommonConfig, setupSignals } from "@root/utils";
 import { FastifyAdapter } from "@nestjs/platform-fastify";
 import { apiReference } from "@scalar/nestjs-api-reference";
 
 async function bootstrap() {
-  const logger = new Logger();
+  const logger = new Logger("Bootstrap");
   const app = await NestFactory.create<NestFastifyApplication>(AppModule, new FastifyAdapter(), {
     bufferLogs: true,
     autoFlushLogs: true,
@@ -27,11 +30,23 @@ async function bootstrap() {
   const globalPrefix = "/api";
   app.setGlobalPrefix(globalPrefix);
   app.enableVersioning();
+  app.use(
+    new ClsMiddleware({
+      saveReq: true,
+      saveRes: true,
+      generateId: true,
+      idGenerator: (req: FastifyRequest) => {
+        const correlationId = (req.headers["X-Correlation-Id"] as string) ?? getRandomId();
+        req.headers["X-Correlation-Id"] = correlationId;
+
+        return correlationId;
+      },
+    }).use,
+  );
 
   const scalarPath = `${globalPrefix}/docs`;
-  const title = "Pooleno | API documentation";
+  const title = "Mofid | API documentation";
   const description = "API documentation and endpoints";
-  const swaggerPath = `${globalPrefix}/docs`;
   const options = new DocumentBuilder()
     .setTitle(title)
     .setDescription(description)
@@ -67,12 +82,18 @@ async function bootstrap() {
     logger.warn("Service has been shut down", "Shutdown");
     process.exit(0);
   });
-  await app.listen(CommonConfig.PORT, "0.0.0.0");
-  logger.log(`Service is running on: ${await app.getUrl()}`, "Bootstrap");
-  logger.log(`Service is running in ${CommonConfig.ENV} mode`, "Bootstrap");
-  logger.log(
-    `Service documentation is available at ${await app.getUrl()}${scalarPath}`,
-    "Bootstrap",
-  );
+  const port = CommonConfig.PORT || 4000;
+  try {
+    logger.log(`Checking if port ${port} is in use`);
+    await KillPort(port);
+    logger.log(`Port ${port} is now free`);
+  } catch (e) {
+    logger.log(`Port ${port} is not in use or could not be killed`);
+  } finally {
+    await app.listen(port, "0.0.0.0");
+  }
+  logger.log(`Service is running on: ${await app.getUrl()}`);
+  logger.log(`Service is running in ${CommonConfig.ENV} mode`);
+  logger.log(`Service documentation is available at ${await app.getUrl()}${scalarPath}`);
 }
 void bootstrap();
